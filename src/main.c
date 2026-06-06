@@ -1,9 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
-
-int main(void) {
-    FILE *f = fopen("../encode/input.txt", "rb");
+#include "header.h"
+int main(int argc, char *argv[]) {
+    char *path = "encode/input.txt";
+    FILE *f = fopen(path, "rb");
     if (!f) {
         perror("File did not open properly");
         return 1;
@@ -11,7 +12,7 @@ int main(void) {
 
     // get file size
     fseek(f, 0, SEEK_END);
-    size_t size = ftell(f);
+    uint64_t size = ftell(f);
     fseek(f, 0, SEEK_SET);
 
     // allocate buffer size dynamically
@@ -34,6 +35,14 @@ int main(void) {
             printf("%i\n", bit);
         }
     }
+
+    Header header;
+    header = create_header(path, size);
+    printf("Magic Number: %X\n", header.magic_number);
+    printf("Filename: %s\n", header.filename);
+    printf("Size: %llu\n", header.file_size);
+
+
 
     free(buffer);
 
