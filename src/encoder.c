@@ -3,15 +3,14 @@
 #include "header.h"
 #include "encoder.h"
 
-void write_file(const char *output_path, Header header, uint8_t *buffer, uint64_t size) {
+void write_file(const char *output_path, uint8_t *buffer, uint64_t size) {
     FILE *out = fopen(output_path, "wb");
     if (!out) {
         perror("Failed to open output file");
         return;
     }
 
-    fwrite(&header, sizeof(Header), 1, out);
-
+    // write whole total_buffer once
     fwrite(buffer, 1, size, out); 
 
     fclose(out);
