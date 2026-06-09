@@ -4,6 +4,7 @@
 #include "header.h"
 #include "encoder.h"
 #include <string.h>
+#include "transformer.h"
 
 int main(int argc, char *argv[]) {
     char *path = "input.txt";
@@ -30,11 +31,7 @@ int main(int argc, char *argv[]) {
     fread(buffer, 1, size, f);
     fclose(f);
 
-    Header header;
-    header = create_header(path, size);
-    printf("Magic Number: %X\n", header.magic_number);
-    printf("Filename: %s\n", header.filename);
-    printf("Size: %llu\n", header.file_size);
+    Header header = create_header(path, size);
 
     // concatanate payload with header into single buffer
     uint64_t total_size = sizeof(header) + size;
@@ -48,6 +45,9 @@ int main(int argc, char *argv[]) {
     // then payload
     memcpy(total_buffer + sizeof(Header), buffer, size);
 
+    for (uint64_t i = 0; i < total_size*8; i++) {
+        printf("%u\n", get_bit_at(total_buffer, i));
+    }
 
     write_file("output", total_buffer, total_size);
 
