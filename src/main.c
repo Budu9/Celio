@@ -2,8 +2,10 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include "header.h"
+#include "encoder.h"
+
 int main(int argc, char *argv[]) {
-    char *path = "encode/input.txt";
+    char *path = "input.txt";
     FILE *f = fopen(path, "rb");
     if (!f) {
         perror("File did not open properly");
@@ -31,7 +33,7 @@ int main(int argc, char *argv[]) {
         // uint8_t because exactly 1 byte
         uint8_t byte = buffer[i];
         for (int j = 0; j < 8; j++) {
-            int8_t bit = (byte >> j) & 1;
+            uint8_t bit = (byte >> j) & 1;
             printf("%i\n", bit);
         }
     }
@@ -42,7 +44,7 @@ int main(int argc, char *argv[]) {
     printf("Filename: %s\n", header.filename);
     printf("Size: %llu\n", header.file_size);
 
-
+    write_file("output", header, buffer, size);
 
     free(buffer);
 

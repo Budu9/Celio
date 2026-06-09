@@ -6,7 +6,7 @@ CFLAGS = -Wall -Wextra -Iinclude
 TARGET = celio
 
 # Source files and objects
-SRC = src/main.c src/header.c
+SRC = src/main.c src/header.c src/encoder.c
 OBJ = $(SRC:.c=.o)
 
 # Default build rule

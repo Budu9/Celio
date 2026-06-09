@@ -55,3 +55,7 @@ dkms.conf
 *.dwo
 
 .vscode
+
+celio
+input.txt
+output
