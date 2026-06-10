@@ -5,6 +5,7 @@
 #include "encoder.h"
 #include <string.h>
 #include "transformer.h"
+#include "decoder.h"
 
 int main(int argc, char *argv[]) {
     char *path = "input.txt";
@@ -49,9 +50,11 @@ int main(int argc, char *argv[]) {
         printf("%u\n", get_bit_at(total_buffer, i));
     }
 
-    write_file("output", total_buffer, total_size);
+    encode("outputraw", total_buffer, total_size);
 
     free(buffer);
+
+    decode("outputraw");
 
     return 0;
 }

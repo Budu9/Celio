@@ -3,7 +3,7 @@
 #include "header.h"
 #include "encoder.h"
 
-void write_file(const char *output_path, uint8_t *buffer, uint64_t size) {
+void encode(const char *output_path, uint8_t *buffer, uint64_t size) {
     FILE *out = fopen(output_path, "wb");
     if (!out) {
         perror("Failed to open output file");
