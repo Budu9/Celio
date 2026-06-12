@@ -8,7 +8,7 @@
 #include "decoder.h"
 
 int main(int argc, char *argv[]) {
-    char *path = "input.txt";
+    char *path = "IMG_0213_watermarked.jpg";
     FILE *f = fopen(path, "rb");
     if (!f) {
         perror("File did not open properly");
@@ -46,9 +46,11 @@ int main(int argc, char *argv[]) {
     // then payload
     memcpy(total_buffer + sizeof(Header), buffer, size);
 
+    /*
     for (uint64_t i = 0; i < total_size*8; i++) {
         printf("%u\n", get_bit_at(total_buffer, i));
     }
+    */
 
     encode("outputraw", total_buffer, total_size);
 
