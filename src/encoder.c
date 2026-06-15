@@ -16,3 +16,24 @@ void encode(const char *output_path, uint8_t *buffer, uint64_t size) {
     fclose(out);
     printf("Encoded to %s\n", output_path);
 }
+
+void write_ppm_frame(char *filename, uint8_t *buffer, uint64_t total_bits) {
+    FILE *f = fopen(filename, "wb");
+    int width = 1920;
+    int height = (total_bits / width) + 1;
+    
+    // P6 for standard binary RGB
+    fprintf(f, "P6\n%d %d\n255\n", width, height);
+    for(uint64_t i = 0; i < total_bits; i++) {
+        uint8_t bit = get_bit_at(buffer, i);
+
+
+        uint8_t colour = (bit == 1) ? 0 : 255;
+
+        // 3 times for RGB
+        fputc(colour, f);
+        fputc(colour, f);
+        fputc(colour, f);
+    }
+    fclose(f);
+}

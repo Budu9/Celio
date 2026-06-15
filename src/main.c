@@ -8,7 +8,7 @@
 #include "decoder.h"
 
 int main(int argc, char *argv[]) {
-    char *path = "IMG_0213_watermarked.jpg";
+    char *path = "input.txt";
     FILE *f = fopen(path, "rb");
     if (!f) {
         perror("File did not open properly");
@@ -52,11 +52,13 @@ int main(int argc, char *argv[]) {
     }
     */
 
-    encode("outputraw", total_buffer, total_size);
+    write_ppm_frame("ppm_file", total_buffer, total_size*8);
+
+    //encode("outputraw", total_buffer, total_size);
 
     free(buffer);
 
-    decode("outputraw");
+    //decode("outputraw");
 
     return 0;
 }
