@@ -60,3 +60,5 @@ celio
 input.txt
 outputraw
 output_same_as_input
+output
+ppm_file

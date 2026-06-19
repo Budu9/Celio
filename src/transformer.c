@@ -13,3 +13,19 @@ uint8_t get_bit_at(uint8_t *buffer, uint64_t bit_index) {
     return (*(buffer+byte_index) >> bit_offset) & 1;
 
 }
+
+
+void set_bit_at(uint8_t *buffer, uint64_t bit_index, uint8_t new_value) {
+
+    uint64_t byte_index = bit_index / 8;
+
+    uint8_t bit_offset = bit_index % 8;
+
+    // sets the bit we want to 0
+    *(buffer+byte_index) = *(buffer+byte_index) & ~(1 << bit_offset);
+
+    // if 1 make it 1 otherwise keep it 0
+    if (new_value == 1) {
+        *(buffer+byte_index) = *(buffer+byte_index) | (1 << bit_offset);
+    }
+}

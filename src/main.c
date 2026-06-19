@@ -53,6 +53,7 @@ int main(int argc, char *argv[]) {
     */
 
     write_ppm_frame("ppm_file", total_buffer, total_size*8);
+    read_ppm_frame("ppm_file", "original");
 
     //encode("outputraw", total_buffer, total_size);
 

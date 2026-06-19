@@ -23,7 +23,8 @@ void write_ppm_frame(char *filename, uint8_t *buffer, uint64_t total_bits) {
     int height = (total_bits / width) + 1;
     
     // P6 for standard binary RGB
-    fprintf(f, "P6\n%d %d\n255\n", width, height);
+    // %10d forces width and height to be 10 bytes making the header size predictable
+    fprintf(f, "P6\n%10d %10d\n255\n", width, height);
     for(uint64_t i = 0; i < total_bits; i++) {
         uint8_t bit = get_bit_at(buffer, i);
 
