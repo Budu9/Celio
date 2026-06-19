@@ -29,7 +29,7 @@ void decode(const char *output_path) {
     printf("Decoded to %s\n", output_path);
 }
 
-void read_ppm_frame(char *input_path, char *output_path) {
+void read_ppm_frame(char *input_path, char *output_path, uint8_t redundancy) {
     FILE *f = fopen(input_path, "rb");
 
     // 29 is the ppm header size (view encoder comment)
@@ -43,6 +43,15 @@ void read_ppm_frame(char *input_path, char *output_path) {
         uint8_t g = fgetc(f);
         uint8_t b = fgetc(f);
 
+        // TODO: actually check for errors here
+        // and/or hamming codes actually
+
+        for (int j = 0; j < redundancy - 1; j++) {
+            r = fgetc(f);
+            g = fgetc(f);
+            b = fgetc(f);
+        }
+
         uint8_t bit = r == 0 ? 1 : 0;
 
         set_bit_at(&header, i, bit);
@@ -54,6 +63,12 @@ void read_ppm_frame(char *input_path, char *output_path) {
         uint8_t r = fgetc(f);
         uint8_t g = fgetc(f);
         uint8_t b = fgetc(f);
+
+        for (int j = 0; j < redundancy - 1; j++) {
+            r = fgetc(f);
+            g = fgetc(f);
+            b = fgetc(f);
+        }
 
         uint8_t bit = r == 0 ? 1 : 0;
 

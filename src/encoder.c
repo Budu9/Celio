@@ -17,10 +17,10 @@ void encode(const char *output_path, uint8_t *buffer, uint64_t size) {
     printf("Encoded to %s\n", output_path);
 }
 
-void write_ppm_frame(char *filename, uint8_t *buffer, uint64_t total_bits) {
+void write_ppm_frame(char *filename, uint8_t *buffer, uint64_t total_bits, uint8_t redundancy) {
     FILE *f = fopen(filename, "wb");
     int width = 1920;
-    int height = (total_bits / width) + 1;
+    int height = (total_bits*redundancy / width) + 1;
     
     // P6 for standard binary RGB
     // %10d forces width and height to be 10 bytes making the header size predictable
@@ -31,10 +31,16 @@ void write_ppm_frame(char *filename, uint8_t *buffer, uint64_t total_bits) {
 
         uint8_t colour = (bit == 1) ? 0 : 255;
 
-        // 3 times for RGB
-        fputc(colour, f);
-        fputc(colour, f);
-        fputc(colour, f);
+        // horizontal redundancy for now
+        // might change for nxn block redundancy later which apparently works better against video compression
+        // but should be fine for now
+        for (int j = 0; j < redundancy; j++) {
+            // 3 times for RGB
+            fputc(colour, f);
+            fputc(colour, f);
+            fputc(colour, f);
+        }
+
     }
     fclose(f);
 }
