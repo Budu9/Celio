@@ -2,6 +2,12 @@
 #include <stdint.h>
 #include "header.h"
 #include "encoder.h"
+#include "transformer.h"
+#include <stdlib.h>
+#include <string.h>
+
+#define WIDTH 1920
+#define HEIGHT 1080
 
 void encode(const char *output_path, uint8_t *buffer, uint64_t size) {
     FILE *out = fopen(output_path, "wb");
@@ -18,13 +24,13 @@ void encode(const char *output_path, uint8_t *buffer, uint64_t size) {
 }
 
 void write_ppm_frame(char *filename, uint8_t *buffer, uint64_t total_bits, uint8_t redundancy) {
+    if (total_bits <= 0) return ;
     FILE *f = fopen(filename, "wb");
-    int width = 1920;
-    int height = (total_bits*redundancy / width) + 1;
+
     
     // P6 for standard binary RGB
     // %10d forces width and height to be 10 bytes making the header size predictable
-    fprintf(f, "P6\n%10d %10d\n255\n", width, height);
+    fprintf(f, "P6\n%10d %10d\n255\n", WIDTH, HEIGHT);
     for(uint64_t i = 0; i < total_bits; i++) {
         uint8_t bit = get_bit_at(buffer, i);
 
@@ -43,4 +49,40 @@ void write_ppm_frame(char *filename, uint8_t *buffer, uint64_t total_bits, uint8
 
     }
     fclose(f);
+}
+
+
+void encode_frame_sequence(char *filename, uint8_t *buffer, uint64_t total_bits, uint8_t redundancy) {
+    uint32_t bits_per_frame = WIDTH * HEIGHT / redundancy;
+    uint64_t num_frames = total_bits / bits_per_frame;
+
+    for (uint64_t i = 0; i < num_frames; i++) {
+        // it is gonna be filename + num for each frame name
+        char frame_name[128];
+        snprintf(frame_name, sizeof(frame_name), "%s_%lu.ppm", filename, i);
+
+        write_ppm_frame(frame_name, buffer, bits_per_frame, redundancy);
+        buffer += (bits_per_frame / 8);
+    }
+
+    // leftover
+    char frame_name[128];
+    snprintf(frame_name, sizeof(frame_name), "%s_%lu.ppm", filename, num_frames);
+
+    // we want to write a whole frame
+    uint64_t full_frame_bytes = (WIDTH * HEIGHT) / redundancy / 8;
+    uint64_t leftover_bits = total_bits - num_frames * bits_per_frame;
+
+    if (leftover_bits <= 0) return ;
+
+    // celiling division
+    uint64_t leftover_bytes = (leftover_bits + 7) / 8;
+
+    // intialise temporary buffer with 0s
+    uint8_t *temp = calloc(full_frame_bytes, 1);
+    memcpy(temp, buffer, leftover_bytes);
+
+    write_ppm_frame(frame_name, temp, bits_per_frame, redundancy);
+
+    free(temp);
 }
