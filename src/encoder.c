@@ -52,11 +52,23 @@ void write_ppm_frame(char *filename, uint8_t *buffer, uint64_t total_bits, uint8
 }
 
 
-void encode_frame_sequence(char *filename, uint8_t *buffer, uint64_t total_bits, uint8_t redundancy) {
+int encode_frame_sequence(char *filename, uint8_t *buffer, uint64_t total_bits, uint8_t redundancy) {
     uint32_t bits_per_frame = WIDTH * HEIGHT / redundancy;
-    uint64_t num_frames = total_bits / bits_per_frame;
 
-    for (uint64_t i = 0; i < num_frames; i++) {
+    // write first frame (header)
+    char header_name[128];
+    snprintf(header_name, sizeof(header_name), "%s_%lu.ppm", filename, 0ul);
+    uint8_t *temp_header = calloc(1, bits_per_frame);
+    memcpy(temp_header, buffer, sizeof(Header));
+    write_ppm_frame(header_name, temp_header, bits_per_frame, redundancy);
+    free(temp_header);
+    buffer += sizeof(Header);
+
+        
+    uint64_t payload_bits = total_bits - sizeof(Header) * 8;
+    uint64_t num_payload_frames = payload_bits / bits_per_frame;
+
+    for (uint64_t i = 1; i < num_payload_frames + 1; i++) {
         // it is gonna be filename + num for each frame name
         char frame_name[128];
         snprintf(frame_name, sizeof(frame_name), "%s_%lu.ppm", filename, i);
@@ -65,15 +77,17 @@ void encode_frame_sequence(char *filename, uint8_t *buffer, uint64_t total_bits,
         buffer += (bits_per_frame / 8);
     }
 
+    uint64_t num_frames = num_payload_frames + 1; // +1 for the header frame
+
     // leftover
     char frame_name[128];
     snprintf(frame_name, sizeof(frame_name), "%s_%lu.ppm", filename, num_frames);
 
     // we want to write a whole frame
     uint64_t full_frame_bytes = (WIDTH * HEIGHT) / redundancy / 8;
-    uint64_t leftover_bits = total_bits - num_frames * bits_per_frame;
+    uint64_t leftover_bits = payload_bits - num_payload_frames * bits_per_frame;
 
-    if (leftover_bits <= 0) return ;
+    if (leftover_bits <= 0) return num_frames;
 
     // celiling division
     uint64_t leftover_bytes = (leftover_bits + 7) / 8;
@@ -85,4 +99,6 @@ void encode_frame_sequence(char *filename, uint8_t *buffer, uint64_t total_bits,
     write_ppm_frame(frame_name, temp, bits_per_frame, redundancy);
 
     free(temp);
+
+    return ++num_frames;
 }

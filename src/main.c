@@ -52,8 +52,11 @@ int main(int argc, char *argv[]) {
     }
     */
 
-    encode_frame_sequence("ppm_file", total_buffer, total_size*8, 4);
+    uint64_t num_frames = encode_frame_sequence("ppm_file", total_buffer, total_size*8, 4);
     // read_ppm_frame("ppm_file", "original", 4);
+    printf("%lu frames created\n", num_frames);
+
+    decode_frame_sequence("ppm_file", "output", 4, num_frames);
 
     //encode("outputraw", total_buffer, total_size);
 
