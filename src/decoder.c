@@ -4,30 +4,8 @@
 #include <stdlib.h>
 #include "header.h"
 #include "transformer.h"
-
-void decode(const char *output_path) {
-    FILE *f = fopen(output_path, "rb");
-    if (!f) return;
-
-    Header header;
-    fread(&header, sizeof(Header), 1, f);
-
-    uint8_t *payload = malloc(header.file_size);
-    
-
-    fread(payload, header.file_size, 1, f);
-    fclose(f);
-
-
-    FILE *out = fopen("output_same_as_input", "wb");
-    if (out) {
-        fwrite(payload, header.file_size, 1, out);
-        fclose(out);
-    }
-
-    free(payload);
-    printf("Decoded to %s\n", output_path);
-}
+#include "crypto.h"
+#include <string.h>
 
 uint64_t read_ppm_frame(char *input_path, uint8_t redundancy, uint8_t *buffer, uint64_t max_bits, uint64_t bit_offset) {
 
@@ -118,9 +96,21 @@ void decode_frame_sequence(char *input_path, char *output_path, uint8_t redundan
     }
     printf("payload_counter=%lu payload_target=%lu\n", payload_counter, payload_target);
 
+    uint8_t *total_buffer = malloc(sizeof(Header) + header.file_size);
+    memcpy(total_buffer, &header, sizeof(Header));
+    memcpy(total_buffer + sizeof(Header), payload, header.file_size);
+
+    if (header.encrypted == 1) {
+        uint8_t *key = derive_key(header.salt, "password");
+        uint8_t *out = malloc(header.file_size);
+        generate_key_stream(key, out, header.file_size);
+        apply_key_stream(total_buffer+sizeof(Header), out, header.file_size);
+        free(out);
+    }
+
     FILE *out = fopen("output", "wb");
     if (out) {
-        fwrite(payload, header.file_size, 1, out);
+        fwrite(total_buffer + sizeof(Header), header.file_size, 1, out);
         fclose(out);
     }
     

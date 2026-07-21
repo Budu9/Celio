@@ -4,8 +4,9 @@
 #include "header.h"
 #include "encoder.h"
 #include <string.h>
-#include "transformer.h"
 #include "decoder.h"
+#include "crypto.h"
+#include <sodium.h>
 
 int main(int argc, char *argv[]) {
     char *path = "input.txt";
@@ -46,23 +47,27 @@ int main(int argc, char *argv[]) {
     // then payload
     memcpy(total_buffer + sizeof(Header), buffer, size);
 
-    /*
-    for (uint64_t i = 0; i < total_size*8; i++) {
-        printf("%u\n", get_bit_at(total_buffer, i));
+    if (sodium_init() < 0) {
+        printf("sodium error\n");
+        return -1;
     }
-    */
 
-    uint64_t num_frames = encode_frame_sequence("ppm_file", total_buffer, total_size*8, 4);
-    // read_ppm_frame("ppm_file", "original", 4);
+    uint8_t *key = generate_key(total_buffer, "password");
+    uint8_t *out = malloc(size);
+    generate_key_stream(key, out, size);
+    apply_key_stream(total_buffer+sizeof(Header), out, size);
+    ((Header *)total_buffer)->encrypted = 1;
+    free(out);
+
+    uint64_t num_frames = encode_frame_sequence("ppm_file", total_buffer, total_size*8, 4, size);
     printf("%lu frames created\n", num_frames);
+    
+    
 
     decode_frame_sequence("ppm_file", "output", 4, num_frames);
 
-    //encode("outputraw", total_buffer, total_size);
 
     free(buffer);
-
-    //decode("outputraw");
 
     return 0;
 }
